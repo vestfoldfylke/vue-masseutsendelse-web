@@ -70,7 +70,7 @@ export default class MatrikkelProxyClient {
     // Return the full response
     return response;
   }
-
+  
   async getMatrikkelEnheterFromPolygon(polygon, epsg, matrikkelContext) {
     if(!polygon) { throw new ('Polygon cannot be empty'); }
     
@@ -107,9 +107,10 @@ export default class MatrikkelProxyClient {
     return response.data;
   }
 
-  async getStoreItems(items, options, matrikkelContext) {
+  async getStoreItems(items, koordinatsystemKodeId, options, matrikkelContext) {
     // Input validation
-    if(!items) { throw new ('items cannot be empty'); }
+    if(!items) { throw new Error ('items cannot be empty'); }
+    if(!koordinatsystemKodeId) { throw new Error('koordinatsystemKodeId cannot be empty')}
 
     // Construct the request
     let request = {
@@ -120,6 +121,7 @@ export default class MatrikkelProxyClient {
         'Content-Type': 'application/json'
       },
       data: {
+        koordinatsystemKodeId: koordinatsystemKodeId,
         items: items
       }
     }

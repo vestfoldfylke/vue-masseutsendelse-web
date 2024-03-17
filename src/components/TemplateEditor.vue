@@ -17,7 +17,7 @@
     />
     <div v-if="$props.showDocumentTemplateSelect">
       <h2 style="margin-top: 2rem;">Dokumentmal</h2>
-      <p>Dette er dokumentmalen som omberammer denne innholdsmalen<p>
+      <p>Dette er dokumentmalen som omberammer denne innholdsmalen</p>
       <p>Her kan du definere verdiene i flettefeltene til hovedmalen</p>
       <VSelect
         v-if="$props.showDocumentTemplateSelect"

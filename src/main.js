@@ -7,8 +7,6 @@ import { VuePlugin } from 'vuera'
 import config from '../config';
 import vuetify from './plugins/vuetify'
 import * as msal from '@azure/msal-browser';
-import * as Sentry from "@sentry/vue";
-import { Integrations } from "@sentry/tracing";
 
 /*
   Async function for setting up mocking if applicable, this will be called before VUE is initialized
@@ -35,22 +33,6 @@ async function prepareEnvironment() {
       storeAuthStateInCookie: false,
     },
   }
-  /*
-    Sentry
-  */
-  if(config.SENTRY_TRACINGORIGINS && typeof config.SENTRY_TRACINGORIGINS === 'string') config.SENTRY_TRACINGORIGINS = config.SENTRY_TRACINGORIGINS.split(',');
-
-  Sentry.init({
-    Vue,
-    dsn: config.SENTRY_DSN,
-    integrations: [
-      new Integrations.BrowserTracing({
-        routingInstrumentation: Sentry.vueRouterInstrumentation(router),
-        tracingOrigins: config.SENTRY_TRACINGORIGINS,
-      }),
-    ],
-    tracesSampleRate: 1.0,
-  });
   /*
     Authentication / Authorization
     This is in no way a idéal way to handle this, but was necessary due to timecontstraints.
@@ -82,7 +64,8 @@ async function prepareEnvironment() {
     // Define the request
     const currentAccounts = Vue.prototype.$msal.getAllAccounts();
     const request = {
-      scopes: [`${config.AZUREAD_CLIENTID}/.default`],
+      // scopes: [`${config.AZUREAD_CLIENTID}/.default`],
+      scopes: [config.AZUREAD_SCOPE],
       account: currentAccounts && currentAccounts[0] ? currentAccounts[0] : undefined
     }
 
@@ -104,7 +87,7 @@ async function prepareEnvironment() {
     // Define the request
     const currentAccounts = Vue.prototype.$msal.getAllAccounts();
     const request = {
-      scopes: [`${config.AZUREAD_CLIENTID}/.default`],
+      scopes: [config.AZUREAD_SCOPE],
       account: currentAccounts && currentAccounts[0] ? currentAccounts[0] : undefined
     }
 
@@ -149,7 +132,6 @@ import store from './store'
 
 // Global error handler, any uncaught errors will be sent here
 Vue.config.errorHandler = function(err, vm, info) {
-  // TODO: Implement Sentry
   console.log('Uncaught error');
   console.log(err);
   console.log(vm);

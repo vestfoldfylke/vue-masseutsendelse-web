@@ -548,10 +548,11 @@
           this.matrikkelLoadingMessage = 'Innhenter alle enhets-ider innenfor polygonene'
           this.matrikkelLoadingSubmessage = `Spør om ${this.dispatch.polygons.polygons.length} polygoner med ${totalVerticesCount} vertiser`
           let matrikkelEnhetIds = [];
+          let ids
           for (const polygon of this.dispatch.polygons.polygons) {
-            let ids = await matrikkelClient.getMatrikkelEnheterFromPolygon(polygon.vertices, polygon.EPSG, { query: { flatten: true, metadata: false } });
+            ids = await matrikkelClient.getMatrikkelEnheterFromPolygon(polygon.vertices, polygon.EPSG, { query: { flatten: true, metadata: false } });
             // Add any ids that don't already exists
-            for(const id of ids) {
+            for(const id of ids.units) {
               if(!matrikkelEnhetIds.includes(id)) matrikkelEnhetIds.push(id);
             }
           }
@@ -592,8 +593,8 @@
 
             // Hent ut data for alle matrikkel enhetene
             this.matrikkelLoadingSubmessage = `Innhenter informasjon om ${batch.length} Matrikkelenheter`;
-            let matrikkelEnheter = await matrikkelClient.getStoreItems(matrikkelEnhetRequestItems);
-
+            let matrikkelEnheter = await matrikkelClient.getStoreItems(matrikkelEnhetRequestItems, ids.koordinatsystemKodeId);
+            matrikkelEnheter = matrikkelEnheter.store[0].return
             // Håndter feil
             if(!matrikkelEnheter || batch.length === 0) {
               throw new AppError('Ingen MatrikkelEnheter funnet', 'Vi klarte ikke å finne noen matrikkelinformasjon for de ' + matrikkelEnhetIds.length + ' idene');
@@ -614,7 +615,7 @@
               Hent ut alle eierforhold innad for MatrikkelEnhetene
             */
             let matrikkelEierforhold = []
-            matrikkelEnheter.forEach((enhet) => {
+            matrikkelEnheter.forEach(enhet => {
               // If the eierforhold is empty
               if(!enhet.eierforhold) {
                 this.dispatch.matrikkelUnitsWithoutOwners.push(enhet);
@@ -650,6 +651,7 @@
             */
             // Finn all unike eier IDer i alle eierforholdene
             let unikeEierIDer = [];
+
             matrikkelEierforhold.forEach((eierforhold) => {
               if(!retreivedOwnerIds.find((id) => id === eierforhold.eierId)) {
                 unikeEierIDer.push(eierforhold.eierId);
@@ -666,18 +668,17 @@
                 value: id
               })
             })
-           
+          
             // Hent ut alle eiere fra Matrikkel API
             this.matrikkelLoadingSubmessage = `Innhenter informasjon om ${unikeEierIDer.length} eiere av ${batch.length} matrikkelenheter`;
             this.matrikkelLoadingSubSubMessage = 'Dette steget tar tid. Matrikkelen, Brønnøysund og Folkeregisteret kontaktes for hver eier'
-            let matrikkelEiere = await matrikkelClient.getStoreItems(matrikkelEierRequestItems);
-
+            let matrikkelEiere = await matrikkelClient.getStoreItems(matrikkelEierRequestItems, ids.koordinatsystemKodeId);
+            matrikkelEiere = matrikkelEiere.store[0].return
             if(!matrikkelEiere || matrikkelEiere.length === 0) {
               throw new AppError('Ingen eiere er funnet', 'Vi spurte matrikkelen om ' + matrikkelEierRequestItems.length + ' eiere, men fikk ingen tilbake');
             } else if(matrikkelEierRequestItems.length > matrikkelEiere.length) {
               throw new AppError('Ingen eiere er funnet', 'Vi spurte matrikkelen om ' + matrikkelEierRequestItems.length + ' eiere, men fikk kun ' + matrikkelEiere.length + ' tilbake');
             }
-
             retreivedOwners.push(...matrikkelEiere);
             batchIndex++;
           }
@@ -722,29 +723,25 @@
               excludedReason = 'Må håndteres manuelt';
               owner.isHardExcluded = true;
             }
-            // Manually handle (Adresse sperre)
-            if(owner.dsf) {
-              const spesCode = parseInt(owner.dsf['SPES-KD'])
-              const statCode = parseInt(owner.dsf['STAT-KD'])
-              if(statCode) {
-                if(statCode === 3) {
-                  excludedReason = 'Utvandret';
+            // Manually handle (Adresse sperre) and inaktive persons. 
+            if(owner.freg?.kanKontaktes === true) {
+                if(owner.freg.status !== 'inaktiv') {
+                const illegalGrading = ['fortrolig', 'strengtFortrolig', 'klientadresse']
+                if(illegalGrading.includes(owner.freg.bostedsadresse.adressegradering)) {
+                  excludedReason = 'Må håndteres manuelt';
                   owner.isHardExcluded = true;
                 }
-                if(statCode === 4) {
-                  excludedReason = 'Forsvunnet';
-                  owner.isHardExcluded = true;
-                }
-                if(statCode === 5) {
-                  excludedReason = 'Død';
-                  owner.isHardExcluded = true;
-                }
-              }
-              if(spesCode && (spesCode === 4 || spesCode === 6 || spesCode === 7)) {
+              } else if(owner.freg.status === 'inaktiv') {
                 excludedReason = 'Må håndteres manuelt';
                 owner.isHardExcluded = true;
               }
             }
+  
+            // kanKontaktes from freg is false
+            if(owner.freg?.kanKontaktes === false) {
+                excludedReason = 'Utvandret/Forsvunnet/Død';
+                owner.isHardExcluded = true;
+              }
 
             // Handle manually
             if(owner.manuallyHandle === true || owner.handleManually === true) {
@@ -752,20 +749,20 @@
               owner.isHardExcluded = true;
             }
 
-            // Utvandret
-            if(owner.utvandret) {
-              excludedReason = 'Utvandret';
-              owner.isHardExcluded = true;
-            }
+            // // Utvandret
+            // if(owner.utvandret) {
+            //   excludedReason = 'Utvandret';
+            //   owner.isHardExcluded = true;
+            // }
 
-            // Forsvunnet
-            if(owner.forsvunnet) {
-              excludedReason = 'Forsvunnet';
-              owner.isHardExcluded = true;
-            }
+            // // Forsvunnet
+            // if(owner.forsvunnet) {
+            //   excludedReason = 'Forsvunnet';
+            //   owner.isHardExcluded = true;
+            // }
 
             // Dead owners
-            if((owner.dead === true) || (owner && owner.name && owner.name.includes('DØDSBO'))) {
+            if((owner.freg?.status === 'doed') || (owner && owner.name && owner.name.includes('DØDSBO'))) {
               excludedReason = 'Død';
               owner.isHardExcluded = true;
             }
