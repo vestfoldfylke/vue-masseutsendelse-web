@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue from 'vue'
 import Vuetify, { VDataTable, VDataTableHeader, VDialog } from 'vuetify/lib'
 
 Vue.use(Vuetify, {
@@ -7,7 +7,7 @@ Vue.use(Vuetify, {
     VDataTableHeader,
     VDialog
   }
-});
+})
 
 export default new Vuetify({
-});
+})

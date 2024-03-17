@@ -1,22 +1,22 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
-
-Vue.use(VueRouter);
+import Vue from 'vue'
+import VueRouter from 'vue-router'
 
 /*
   Import views
 */
 import HomeView from './views/Home'
 import LoginView from './views/Login'
-import LogoutView from './views/Logout';
+import LogoutView from './views/Logout'
 import UtsendelserView from './views/Utsendelser'
 import TemplateView from './views/Templates'
 import DevelopmentView from './views/Development'
 
+Vue.use(VueRouter)
+
 /*
   Setup routes
 */
-let routes = [
+const routes = [
   {
     path: '/',
     component: HomeView
@@ -40,7 +40,7 @@ let routes = [
 ]
 
 // Add the dev route if in development mode
-if(process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development') {
   routes.push({
     path: '/dev',
     component: DevelopmentView
@@ -50,33 +50,33 @@ if(process.env.NODE_ENV === 'development') {
 /*
   Setup the router
 */
-let router = new VueRouter({
+const router = new VueRouter({
   mode: 'history',
-  routes: routes
-});
+  routes
+})
 
 /*
   Handle authentication
 */
 router.beforeEach(async (to, from, next) => {
   // If logging in, just proceed
-  if(to && (to.path === '/login' || to.path === '/logout')) return next();
-  if(to.hash && to.hash.startsWith('#code=')) return next();
+  if (to && (to.path === '/login' || to.path === '/logout')) return next()
+  if (to.hash && to.hash.startsWith('#code=')) return next()
 
   // Check if re-authentication is necessary
-  if(Vue.prototype.$isAuthenticationRequired()) {
-    console.log('Must re-authenticate');
-    next('/login');
+  if (Vue.prototype.$isAuthenticationRequired()) {
+    console.log('Must re-authenticate')
+    next('/login')
   }
-  
+
   // Proceed
-  next();
+  next()
 })
 
 // Error handler
 router.onError((err) => {
-  console.log('Route error:');
-  console.log(err);
+  console.log('Route error:')
+  console.log(err)
 })
 
-export default router;
+export default router
