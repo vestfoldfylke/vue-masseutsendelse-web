@@ -4,7 +4,7 @@
 import AppError from '../../vtfk-errors/AppError'
 // For parsing XML and outputing GeoJSON
 const toGeoJSON = require('@mapbox/togeojson')
-const { DOMParser } = require('@xmldom/xmldom')
+// const { DOMParser } = require('@xmldom/xmldom')
 
 export async function parse (text) {
   // Input validation

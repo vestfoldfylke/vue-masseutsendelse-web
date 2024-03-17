@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@azure/msal-browser": "2.20.0",
-    "@mapbox/togeojson": "^0.16.0",
+    "@mapbox/togeojson": "0.16.0",
     "@toast-ui/vue-editor": "3.1.5",
     "@turf/area": "6.5.0",
     "@turf/helpers": "6.5.0",
