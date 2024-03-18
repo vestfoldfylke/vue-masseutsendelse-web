@@ -108,6 +108,9 @@ const store = new Vuex.Store({
         const request = {
           url: config.MASSEUTSENDELSEAPI_BASEURL + 'generatePDF',
           method: 'post',
+          headers: {
+            authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
+          },
           data: requestData
         }
         // Make the request
