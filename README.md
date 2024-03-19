@@ -1,7 +1,7 @@
 # masseutsendelse-web
+Prod and test hosted on vercel.
 
 ## Environment variables
-These will have to be defined in your build environment (example: GitHub Actions) as it is a static web app.
 | Enviromnent variable | Description |
 |---|---|
 | VUE_APP_MASSEUTSENDELSEAPI_BASE_URL | The base url of the MasseutsendelseAPI |
@@ -11,6 +11,7 @@ These will have to be defined in your build environment (example: GitHub Actions
 | VUE_APP_MOCK_MASSEUTSENDELSE_API (Development) | Should the MasseutsendelseAPI be mocked? (true/false) |
 | VUE_APP_AZUREAD_CLIENTID | The Azure Appregistration clientId |
 | VUE_APP_AZUREAD_AUTHORITYURL | https://login.microsoftonline.com/**TenantID** |
+| VUE_APP_AZUREAD_SCOPE | https://URL.telemarkfylke.no/user_impersonation
 
 ## Project installation and setup
 ### Install all project dependencies
