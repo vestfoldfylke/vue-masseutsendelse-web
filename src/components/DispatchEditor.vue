@@ -594,7 +594,12 @@
             // Hent ut data for alle matrikkel enhetene
             this.matrikkelLoadingSubmessage = `Innhenter informasjon om ${batch.length} Matrikkelenheter`;
             let matrikkelEnheter = await matrikkelClient.getStoreItems(matrikkelEnhetRequestItems, ids.koordinatsystemKodeId);
-            matrikkelEnheter = matrikkelEnheter.store[0].return
+            // matrikkelEnheter = matrikkelEnheter.store[0].return
+            if(matrikkelEnheter.store?.[0]['soap:Body']?.return !== undefined) {
+              matrikkelEnheter = matrikkelEnheter.store[0]['soap:Body']?.return
+            } else{
+              matrikkelEnheter = matrikkelEnheter.store[0].return
+            }
             // Håndter feil
             if(!matrikkelEnheter || batch.length === 0) {
               throw new AppError('Ingen MatrikkelEnheter funnet', 'Vi klarte ikke å finne noen matrikkelinformasjon for de ' + matrikkelEnhetIds.length + ' idene');
@@ -673,7 +678,11 @@
             this.matrikkelLoadingSubmessage = `Innhenter informasjon om ${unikeEierIDer.length} eiere av ${batch.length} matrikkelenheter`;
             this.matrikkelLoadingSubSubMessage = 'Dette steget tar tid. Matrikkelen, Brønnøysund og Folkeregisteret kontaktes for hver eier'
             let matrikkelEiere = await matrikkelClient.getStoreItems(matrikkelEierRequestItems, ids.koordinatsystemKodeId);
-            matrikkelEiere = matrikkelEiere.store[0].return
+            if(matrikkelEiere.store[0]['soap:Body']?.return !== undefined) {
+              matrikkelEiere = matrikkelEiere.store[0]['soap:Body']?.return
+            } else{
+              matrikkelEiere = matrikkelEiere.store[0].return
+            }
             if(!matrikkelEiere || matrikkelEiere.length === 0) {
               throw new AppError('Ingen eiere er funnet', 'Vi spurte matrikkelen om ' + matrikkelEierRequestItems.length + ' eiere, men fikk ingen tilbake');
             } else if(matrikkelEierRequestItems.length > matrikkelEiere.length) {
@@ -727,7 +736,7 @@
             if(owner.freg?.kanKontaktes === true) {
                 if(owner.freg.status !== 'inaktiv') {
                 const illegalGrading = ['fortrolig', 'strengtFortrolig', 'klientadresse']
-                if(illegalGrading.includes(owner.freg.bostedsadresse.adressegradering)) {
+                if(illegalGrading.includes(owner.freg.bostedsadresse?.adressegradering)) {
                   excludedReason = 'Må håndteres manuelt';
                   owner.isHardExcluded = true;
                 }
