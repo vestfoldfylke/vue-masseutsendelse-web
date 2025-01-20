@@ -62,7 +62,7 @@
 // import axios from 'axios';
 import { Editor } from '@toast-ui/vue-editor';
 import { Button, TextField } from '@vtfk/components';
-import Sjablong from 'sjablong';
+import Sjablong from '@vtfk/sjablong';
 import SchemaFields from './SchemaFields.vue';
 import InsertTemplateForm from './templating/InsertTemplateForm.vue';
 
