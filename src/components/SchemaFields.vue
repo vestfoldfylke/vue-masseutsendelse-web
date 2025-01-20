@@ -38,7 +38,7 @@
 <script>
 // Importer dependencies
 import AppError from '../lib/vtfk-errors/AppError';
-import Sjablong from 'sjablong';
+import Sjablong from '@vtfk/sjablong';
 import get from 'lodash.get';
 import set from 'lodash.set';
 import merge from 'lodash.merge';

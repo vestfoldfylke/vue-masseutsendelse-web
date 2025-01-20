@@ -252,7 +252,7 @@
 
   // Dependencies
   import MatrikkelProxyClient from '../lib/matrikkelProxyClient'
-  import Sjablong from 'sjablong';
+  import Sjablong from '@vtfk/sjablong';
   import merge from 'lodash.merge'
   import pick from 'lodash.pick';
   import PolyParser from '../lib/polyparser/polyparser';
@@ -591,6 +591,8 @@
               })
             })
 
+            console.log(matrikkelEnhetRequestItems)
+
             // Hent ut data for alle matrikkel enhetene
             this.matrikkelLoadingSubmessage = `Innhenter informasjon om ${batch.length} Matrikkelenheter`;
             let matrikkelEnheter = await matrikkelClient.getStoreItems(matrikkelEnhetRequestItems, ids.koordinatsystemKodeId);
@@ -678,6 +680,7 @@
             this.matrikkelLoadingSubmessage = `Innhenter informasjon om ${unikeEierIDer.length} eiere av ${batch.length} matrikkelenheter`;
             this.matrikkelLoadingSubSubMessage = 'Dette steget tar tid. Matrikkelen, Brønnøysund og Folkeregisteret kontaktes for hver eier'
             let matrikkelEiere = await matrikkelClient.getStoreItems(matrikkelEierRequestItems, ids.koordinatsystemKodeId);
+            // console.log(matrikkelEiere)
             if(matrikkelEiere.store[0]['soap:Body']?.return !== undefined) {
               matrikkelEiere = matrikkelEiere.store[0]['soap:Body']?.return
             } else{
