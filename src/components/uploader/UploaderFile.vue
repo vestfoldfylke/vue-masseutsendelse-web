@@ -1,5 +1,5 @@
 <template>
-  <div class="filecontainer">
+  <div class="fileContainer">
     <file-icon :filename="file.name" />
     <p class="filename">{{$props.file.name}}</p>
   </div>

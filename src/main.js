@@ -3,7 +3,7 @@
 */
 import Vue from 'vue'
 import App from './App.vue'
-import { VuePlugin } from 'vuera'
+import {VuePlugin} from 'vuera'
 import config from '../config'
 import vuetify from './plugins/vuetify'
 import * as msal from '@azure/msal-browser'
@@ -13,7 +13,6 @@ import * as msal from '@azure/msal-browser'
 */
 import 'leaflet/dist/leaflet.css' // Used by leaflet for displaying maps
 import '@toast-ui/editor/dist/toastui-editor.css' // Used by the ToastUI markdown editor
-
 /*
   Setup
 */
@@ -21,7 +20,7 @@ import '@toast-ui/editor/dist/toastui-editor.css' // Used by the ToastUI markdow
 import ErrorField from './components/errors/ErrorField'
 import ErrorModal from './components/errors/ErrorModal'
 
-// Setup the routes
+// Set up the routes
 import router from './router'
 
 // Import the Vuex store
@@ -31,7 +30,7 @@ import store from './store'
   Async function for setting up mocking if applicable, this will be called before VUE is initialized
 */
 async function prepareEnvironment () {
-  // Setup the MSW mocking if applicable
+  // Set up the MSW mocking if applicable
   if (config.MOCK_ENABLED) {
     console.log('== Starting MSW mocking ==')
     const { worker } = require('./mocks/browser')
@@ -39,7 +38,11 @@ async function prepareEnvironment () {
   }
 
   // Create msal
-  const msalConfig = {
+  /*
+    Authentication / Authorization
+    This is in no way an idéal way to handle this, but was necessary due to time constraints.
+  */
+  Vue.prototype.$msalConfig = {
     auth: {
       clientId: config.AZUREAD_CLIENTID,
       authority: config.AZUREAD_AUTHORITYURL,
@@ -52,11 +55,6 @@ async function prepareEnvironment () {
       storeAuthStateInCookie: false
     }
   }
-  /*
-    Authentication / Authorization
-    This is in no way a idéal way to handle this, but was necessary due to timecontstraints.
-  */
-  Vue.prototype.$msalConfig = msalConfig
   Vue.prototype.$msal = new msal.PublicClientApplication(Vue.prototype.$msalConfig)
 
   Vue.prototype.$accessToken = undefined
@@ -129,7 +127,7 @@ async function prepareEnvironment () {
 // Add global accessible object
 Vue.prototype.$config = config
 
-// Use Vuera to use react components in Vue
+// Use Vuera to use React components in Vue
 Vue.use(VuePlugin)
 Vue.config.productionTip = false
 

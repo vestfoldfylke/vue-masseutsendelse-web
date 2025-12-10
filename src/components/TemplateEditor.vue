@@ -30,7 +30,7 @@
         @change="onDocumentTemplateChanged()"
         style="justify-content: flex-start!important;"
       />
-      <!-- Dyanamic template -->
+      <!-- Dynamic template -->
       <div v-if="mainTemplateSchema">
         <SchemaFields v-model="activeTemplate.documentData" :schema="mainTemplateSchema" @error="(e) => error = e" />
       </div>
@@ -59,7 +59,6 @@
 </template>
 
 <script>
-// import axios from 'axios';
 import { Editor } from '@toast-ui/vue-editor';
 import { Button, TextField } from '@vtfk/components';
 import Sjablong from '@vtfk/sjablong';
@@ -143,7 +142,7 @@ export default {
                     type: 'string'
                   },
                   'your-reference': {
-                    label: 'Deres refereanse',
+                    label: 'Deres referanse',
                     type: 'string'
                   },
                   paragraph: {
@@ -182,7 +181,7 @@ export default {
       if(!this.activeTemplate.documentDefinitionId) { return undefined; }
       
       // Get the schema
-      let template = this.documentTemplates.find((i) => i.value == this.activeTemplate.documentDefinitionId);
+      let template = this.documentTemplates.find((i) => i.value === this.activeTemplate.documentDefinitionId);
       if(!template || !template.schema) { return undefined }
 
       // Return the schema
@@ -202,9 +201,9 @@ export default {
     },
     onPreviewTemplate() {
       try {
-        // Get markdown from the editor
+        // Get Markdown from the editor
         const markdown = this.$refs.editor.editor.getMarkdown();
-        // Validate the template markdown
+        // Validate the template Markdown
         Sjablong.validateTemplate(markdown);
         // 
         let templateRequest = {
@@ -221,7 +220,7 @@ export default {
     async onSaveTemplate() {
       // Validation
       if(!confirm('Er du helt sikker på at du vil lagre malen?')) return;
-      if(this.activeTemplate.template == '' && !confirm('Malen er uten innhold, vil du fortsatt lagre?')) return;
+      if(this.activeTemplate.template === '' && !confirm('Malen er uten innhold, vil du fortsatt lagre?')) return;
       
       // Validate that the template is valid
       try {
@@ -324,7 +323,7 @@ export default {
         // Get the active template
         this.activeTemplate = JSON.parse(JSON.stringify(this.$props.template));
 
-        // Decode the base64 markdown to utf8
+        // Decode the base64 Markdown to utf8
         if(this.activeTemplate.template && typeof this.activeTemplate.template === 'string') {
           this.activeTemplate.template = Buffer.from(this.activeTemplate.template, 'base64').toString('utf8');
         }
