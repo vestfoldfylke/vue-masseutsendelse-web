@@ -158,14 +158,14 @@
 
 <script>
 // VTFK komponenter
-import { Button } from '@vtfk/components'
+import {Button} from '@vtfk/components'
 
 // Prosjekt komponenter
 import Loading from '../components/Loading.vue';
 import Map from '../components/Map.vue';
 import DispatchEditor from '../components/DispatchEditor.vue';
 
-  export default {
+export default {
     name: 'UtsendelserView',
     components: {
         'VTFKButton': Button,
@@ -213,17 +213,17 @@ import DispatchEditor from '../components/DispatchEditor.vue';
     },
     methods: {
       getColor (status) {
-        if (status == "approved") return '#D0C788'
-        else if (status == "notapproved") return '#E7827E'
-        else if (status == "completed") return '#91B99F'
-        else if (status == "inprogress") return '#E0C38B'
+        if (status === "approved") return '#D0C788'
+        else if (status === "notapproved") return '#E7827E'
+        else if (status === "completed") return '#91B99F'
+        else if (status === "inprogress") return '#E0C38B'
         else return '#FFFFF'
       },
       translateStatus (status) {
-        if (status == "completed") return "Fullført"
-        else if (status == "inprogress") return "Utsendelse Pågår"
-        else if (status == "approved") return "Godkjent"
-        else if (status == "notapproved") return "Under Behandling"
+        if (status === "completed") return "Fullført"
+        else if (status === "inprogress") return "Utsendelse Pågår"
+        else if (status === "approved") return "Godkjent"
+        else if (status === "notapproved") return "Under Behandling"
       },
       formatDateString(dateString) {
         try {
@@ -264,8 +264,7 @@ import DispatchEditor from '../components/DispatchEditor.vue';
       async editItem1 (item) {
         this.$store.commit('setLoadingModal',{title: 'Laster utsendelsen'});
         try {
-          let dispatchEdit = await this.$store.dispatch('getDispatchesById', item._id)
-          this.editedItem = dispatchEdit;
+          this.editedItem = await this.$store.dispatch('getDispatchesById', item._id);
           this.isEditingItem = true;
           this.$store.commit('resetLoadingModal');
         } catch (err) {
@@ -302,7 +301,7 @@ import DispatchEditor from '../components/DispatchEditor.vue';
 
 <style scoped>
 .wrapper {
-  box-shadow: 0px 1px 5px 1px #888888;
+  box-shadow: 0 1px 5px 1px #888888;
 }
 .centerbtn {
   width: 100%;
@@ -320,7 +319,7 @@ import DispatchEditor from '../components/DispatchEditor.vue';
 }
 .map-wrapper {
   position: relative;
-  box-shadow: 0px 1px 5px 1px #888888;   
+  box-shadow: 0 1px 5px 1px #888888;   
 }
 .card {
   width: 100%;
