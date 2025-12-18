@@ -2,7 +2,7 @@
   Import dependencies
 */
 import AppError from '../../vtfk-errors/AppError'
-// For parsing XML and outputing GeoJSON
+// For parsing XML and outputting GeoJSON
 const toGeoJSON = require('@mapbox/togeojson')
 // const { DOMParser } = require('@xmldom/xmldom')
 

@@ -40,7 +40,7 @@
     </template>
     <template v-slot:expanded-item="{ headers, item }">
       <td :colspan="headers.length" style="padding: 1rem 1rem;">
-        <div style="text-algin: left; justify-self: start;">
+        <div style="text-align: left; justify-self: start;">
           <span v-if="item._type.toLowerCase().includes('juridisk')">Organisasjonsnummer: {{item.nummer}}</span>
           <span v-else>Personnummer: {{item.nummer}}</span>
         </div>

@@ -17,7 +17,7 @@ export function parse (text) {
     // Validate that the file contains entities
     if (!parsed.entities) { throw new AppError('The file contains no shapes', 'We were unable to find any shapes in the file') }
 
-    // Retreive polygons from the file
+    // Retrieve polygons from the file
     const polygons = parsed.entities.filter(i => i.type === 'LWPOLYLINE')
     if (polygons.length === 0) { throw new AppError('No polygons in file', `We were able to find ${parsed.entities.length} shapes in the file, but none are polygons`) }
 

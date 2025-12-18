@@ -170,6 +170,6 @@ export default {
   .map-wrapper {
     height: 100%;
     width: 100%;
-    box-shadow: 0px 1px 5px 1px #888888;
+    box-shadow: 0 1px 5px 1px #888888;
   }
 </style>

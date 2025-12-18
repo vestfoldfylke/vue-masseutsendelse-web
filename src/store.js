@@ -3,10 +3,10 @@
 */
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios'
 import AppError from './lib/vtfk-errors/AppError'
 import config from '../config'
 import merge from 'lodash.merge'
+import { removeKeys }  from '@vtfk/utilities'
 
 // Configure vue to use Vuex
 Vue.use(Vuex)
@@ -96,6 +96,7 @@ const store = new Vuex.Store({
         const requestData = {
           preview: true,
           template: req.template.template,
+          templateName: req.template.name,
           documentDefinitionId: req.template.documentDefinitionId,
           data
         }
@@ -104,18 +105,25 @@ const store = new Vuex.Store({
           message: 'Dette kan ta noen sekunder'
         })
 
-        // Define the requiest
+        // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'generatePDF',
-          method: 'post',
+          method: 'POST',
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           },
-          data: requestData
+          body: JSON.stringify(requestData)
         }
+
         // Make the request
-        const response = await axios.request(request)
-        context.commit('setPreviewPDF', response.data.base64)
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}generatePDF`, request)
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('generatePDF:', errorData)
+          throw new AppError('Kunne ikke opprette forhåndsvisning', 'Kunne ikke opprette forhåndsvisning');
+        }
+
+        const responseData = await response.json()
+        context.commit('setPreviewPDF', responseData.base64)
         context.commit('resetLoadingModal')
       } catch (err) {
         context.commit('resetLoadingModal')
@@ -129,45 +137,59 @@ const store = new Vuex.Store({
 
         // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'dispatches',
           method: 'GET',
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
+
         // Reset the data
         context.commit('setDispatches', undefined)
-        // Make the request
-        const response = await axios.request(request)
 
-        if (!response || !response.data) throw new AppError('Kunne ikke laste utsendelser', 'Serveren svarte, men finner ikke data i svaret')
+        // Make the request
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}dispatches`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('getDispatches:', errorData)
+          throw new AppError('Kunne ikke laste utsendelser', 'Kunne ikke laste utsendelser');
+        }
+
+        const responseData = await response.json()
+
+        if (!responseData) {
+          throw new AppError('Kunne ikke laste utsendelser', 'Serveren svarte, men finner ikke data i svaret')
+        }
 
         // Commit and return the data
-        context.commit('setDispatches', response.data)
-        return response.data
+        context.commit('setDispatches', responseData)
+        return responseData
       } catch (err) {
         return Promise.reject(err)
       }
     },
     async getBrreg (context, id) {
       try {
-        if (!id) throw new AppError('ID cannot be empty, must provide an ID to make the reqeust.')
+        if (!id) {
+          throw new AppError('ID cannot be empty, must provide an ID to make the request.')
+        }
 
         const request = {
           method: 'GET',
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'brreg/' + id,
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
-        // Make the request
-        const response = await axios.request(request)
 
-        // Return the respose
-        return response.data
+        // Make the request
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}brreg/${id}`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('getBrreg:', errorData)
+          throw new AppError('Kunne ikke laste data fra Brønnøysundregisteret', 'Kunne ikke laste data fra Brønnøysundregisteret');
+        }
+
+        return await response.json()
       } catch (err) {
-        console.log('Error getting orgbyId for pre included orgs')
-        console.log(err)
         return Promise.reject(err)
       }
     },
@@ -178,21 +200,30 @@ const store = new Vuex.Store({
 
         // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'dispatches/' + id + '?code=1pcYSPPawrq0FGkzGTwsaLkgmmy3fvRej9ujdDfwXZ17/9bDvFZspQ==',
           method: 'GET',
-          data: id,
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
+
         // Make the request
-        const response = await axios.request(request)
-        if (!response || !response.data) throw new AppError('Kunne ikke laste utsendelse', 'Serveren svarte med finner ikke utsendelsen i svaret')
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}dispatches/${id}`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('getDispatchesById:', errorData)
+          throw new AppError('Kunne ikke laste utsendelse', 'Kunne ikke laste utsendelse');
+        }
+        
+        const responseData = await response.json()
+
+        if (!responseData) {
+          throw new AppError('Kunne ikke laste utsendelse', 'Serveren svarte med finner ikke utsendelsen i svaret')
+        }
+
         // Return the data
-        return response.data
+        return responseData
       } catch (err) {
-        console.log('Error opening dispatchById')
-        console.log(err)
+        console.log('Error opening dispatchById:', id)
         return Promise.reject(err)
       }
     },
@@ -203,20 +234,32 @@ const store = new Vuex.Store({
 
         // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'templates',
-          method: 'get',
+          method: 'GET',
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
+
         // Reset the data
         context.commit('setTemplates', undefined)
+
         // Make the request
-        const response = await axios.request(request)
-        if (!response || !response.data) throw new AppError('Kunne ikke laste maler', 'Serveren svarte, men finner ingen maler i svaret')
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}templates`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('getTemplates:', errorData)
+          throw new AppError('Kunne ikke laste maler', 'Kunne ikke laste maler');
+        }
+
+        const responseData = await response.json()
+
+        if (!responseData) {
+          throw new AppError('Kunne ikke laste maler', 'Serveren svarte, men finner ingen maler i svaret')
+        }
+
         // Commit and return the data
-        context.commit('setTemplates', response.data)
-        return response.data
+        context.commit('setTemplates', responseData)
+        return responseData
       } catch (err) {
         return Promise.reject(err)
       }
@@ -226,11 +269,22 @@ const store = new Vuex.Store({
         // Handle authentication
         await handleAuthentication()
 
+        // Strip away some fields that should not be set by this request
+        template = removeKeys(template, [
+          "createdTimestamp",
+          "createdBy",
+          "createdById",
+          "createdByDepartment",
+          "modifiedTimestamp",
+          "modifiedBy",
+          "modifiedById",
+          "modifiedByDepartment"
+        ])
+
         // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'templates',
-          method: 'post',
-          data: template,
+          method: 'POST',
+          body: JSON.stringify(template),
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
@@ -241,10 +295,18 @@ const store = new Vuex.Store({
           title: 'Lagrer',
           message: 'Dette kan ta noen sekunder'
         })
+
         // Make the request
-        await axios.request(request)
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}templates`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('postTemplate:', errorData)
+          throw new AppError('Kunne ikke lagre mal', 'Kunne ikke lagre mal');
+        }
+
         // Get the updated templates
         await context.dispatch('getTemplates')
+
         // Clear the loading modal
         context.commit('resetLoadingModal')
       } catch (err) {
@@ -257,24 +319,35 @@ const store = new Vuex.Store({
         // Handle authentication
         await handleAuthentication()
 
+        // Strip away some fields that should not be set by this request.
+        template = removeKeys(template, ["createdTimestamp", "createdBy", "createdById", "modifiedTimestamp", "modifiedBy", "modifiedById"])
+
         // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'templates/' + template._id,
-          method: 'put',
-          data: template,
+          method: 'PUT',
+          body: JSON.stringify(template),
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
+
         // Set the loading modal
         context.commit('setLoadingModal', {
           title: 'Lagrer',
           message: 'Dette kan ta noen sekunder'
         })
+
         // Make the request
-        await axios.request(request)
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}templates/${template._id}`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('putTemplate:', errorData)
+          throw new AppError('Kunne ikke oppdatere mal', 'Kunne ikke oppdatere mal');
+        }
+
         // Get the updated templates
         await context.dispatch('getTemplates')
+
         // Clear the loading modal
         context.commit('resetLoadingModal')
       } catch (err) {
@@ -287,22 +360,32 @@ const store = new Vuex.Store({
         // Handle authentication
         await handleAuthentication()
 
+        // Strip away some fields that should not be set by this request
+        data = removeKeys(data, ["validatedArchivenumber", "createdTimestamp", "createdBy", "createdById", "modifiedTimestamp", "modifiedBy", "modifiedById"])
+
         // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'dispatches?code=zxjm63HhIg6ZqUOE8xdHN8NnJmYh9ocBeFMXVxeBjYVFHEjI9amBFw==',
-          method: 'post',
-          data,
+          method: 'POST',
+          body: JSON.stringify(data),
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
+
         // Set the loading modal
         context.commit('setLoadingModal', {
           title: 'Lagrer',
           message: 'Dette kan ta noen sekunder'
         })
+
         // Make the request
-        await axios.request(request)
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}dispatches`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('postDispatches:', errorData)
+          throw new AppError('Kunne ikke opprette utsendelse', 'Kunne ikke opprette utsendelse');
+        }
+
         // Clear the loading modal
         context.commit('resetLoadingModal')
         context.dispatch('getDispatches')
@@ -318,23 +401,44 @@ const store = new Vuex.Store({
         // Handle authentication
         await handleAuthentication()
 
+        // Strip away some fields that should not be set by this request
+        data = removeKeys(data, [
+          "validatedArchivenumber",
+          "createdTimestamp",
+          "createdBy",
+          "createdById",
+          "createdByDepartment",
+          "modifiedTimestamp",
+          "modifiedBy",
+          "modifiedById",
+          "modifiedByDepartment"
+        ])
+
         // Define the request
         const request = {
-          url: config.MASSEUTSENDELSEAPI_BASEURL + 'dispatches/' + data._id + '?code=SejmUBQQsdqaduLS0mIBR3MFluZTGdyvxCVkZJibQ6J/bMPaAE4ZqA==',
-          method: 'put',
-          data,
+          method: 'PUT',
+          body: JSON.stringify(data),
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
+
         // Set the loading modal
         context.commit('setLoadingModal', {
           title: 'Lagrer',
           message: 'Dette kan ta noen sekunder'
         })
+
         // Make the request
-        await axios.request(request)
+        const response = await fetch(`${config.MASSEUTSENDELSEAPI_BASEURL}dispatches/${data._id}`, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('editDispatches:', errorData)
+          throw new AppError('Kunne ikke oppdatere utsendelse', 'Kunne ikke oppdatere utsendelse');
+        }
+
         await context.dispatch('getDispatches')
+
         // Clear the loading modal
         context.commit('resetLoadingModal')
       } catch (err) {
@@ -345,9 +449,15 @@ const store = new Vuex.Store({
     async downloadBlob (context, options) {
       try {
         // Input validation
-        if (!options) throw new AppError('Options ikke satt', 'Du kan ikke laste ned en fil uten å sende med innstillinger')
-        if (!options.dispatchId) throw new AppError('options.dispatchId', 'Du kan ikke laste ned en fil uten å sende med dispatchId')
-        if (!options.blobId) throw new AppError('options.dispatchId', 'Du kan ikke laste ned en fil uten å sende med blodId')
+        if (!options) {
+          throw new AppError('Options ikke satt', 'Du kan ikke laste ned en fil uten å sende med innstillinger')
+        }
+        if (!options.dispatchId) {
+          throw new AppError('options.dispatchId', 'Du kan ikke laste ned en fil uten å sende med dispatchId')
+        }
+        if (!options.blobId) {
+          throw new AppError('options.dispatchId', 'Du kan ikke laste ned en fil uten å sende med blobId')
+        }
 
         // Define the URL to download
         const url = options.url || `${config.MASSEUTSENDELSEAPI_BASEURL}blobs/${options.dispatchId}/${options.blobId}/`
@@ -356,15 +466,20 @@ const store = new Vuex.Store({
         await handleAuthentication()
 
         const request = {
-          method: 'get',
-          url,
+          method: 'GET',
           headers: {
             authorization: `Bearer ${Vue.prototype.$accessToken.accessToken}`
           }
         }
 
-        const response = await axios.request(request)
-        return response.data
+        const response = await fetch(url, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('downloadBlob:', errorData)
+          throw new AppError('Kunne ikke laste ned fil', 'Kunne ikke laste ned fil');
+        }
+
+        return await response.json()
       } catch (err) {
         context.commit('setModalError', err)
         return Promise.reject(err)
@@ -373,19 +488,31 @@ const store = new Vuex.Store({
     async makeMatrikkelRequest (context, request) {
       try {
         // Input validation
-        if (!request) throw new AppError('Request is empty', 'Cannot make an empty matrikkelRequest')
+        if (!request) {
+          throw new AppError('Request is empty', 'Cannot make an empty matrikkelRequest')
+        }
 
         // Handle authentication
         await handleAuthentication()
 
+        const url = request.url
+        delete request.url
+
+        request.body = JSON.stringify(request.data)
+        delete request.data
+
         // Set the authorization header
         request.headers.authorization = `Bearer ${Vue.prototype.$accessToken.accessToken}`
 
-        // Make request
-        const response = await axios.request(request)
-
         // Return the response
-        return response
+        const response = await fetch(url, request)
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('makeMatrikkelRequest:', errorData)
+          throw new AppError('Kunne ikke hente data fra matrikkelen', 'Kunne ikke hente data fra matrikkelen');
+        }
+
+        return await response.json()
       } catch (err) {
         return Promise.reject(err)
       }

@@ -1,5 +1,5 @@
 <template>
-  <img :src="icon" style="width: 100%" @click="$emit('click')" />
+  <img :src="icon" style="width: 100%" @click="$emit('click')" alt="" />
 </template>
 
 <script>
@@ -16,10 +16,10 @@ export default {
       if(!this.$props.filename) return require('./fileicons/default.svg');
       if(typeof this.$props.filename !== 'string' || !this.$props.filename.includes('.') || this.$props.filename.endsWith('.')) return require('./fileicons/default.svg');
 
-      let fileExtrension = this.$props.filename.substring(this.$props.filename.lastIndexOf('.') + 1);
+      let fileExtension = this.$props.filename.substring(this.$props.filename.lastIndexOf('.') + 1);
 
       try {
-        return require(`./fileicons/${fileExtrension}.svg`);
+        return require(`./fileicons/${fileExtension}.svg`);
       } catch {
         return require('./fileicons/default.svg');
       }

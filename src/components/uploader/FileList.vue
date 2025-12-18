@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import AppError from '../../lib/vtfk-errors/AppError'
 import FileIcon from './FileIcon.vue'
 
 export default {
@@ -70,26 +70,35 @@ export default {
     },
     async downloadBlob(blob) {
       try {
-        if(!blob) return;
+        if (!blob) return;
 
-        // If the blob dont have data url and it has been provided a download base url
-        if(!blob.dataUrl && this.$props.downloadBaseUrl) {
-          let request = {
-            method: 'get',
-            url: `${this.$props.downloadBaseUrl}${blob.name}` 
+        // If the blob don't have data url, and it has been provided a download base url
+        if (!blob.dataUrl && this.$props.downloadBaseUrl) {
+          const request = {
+            method: 'GET'
           }
-          if(this.$accessToken && this.$accessToken.accessToken) {
+
+          if (this.$accessToken?.accessToken) {
             request.headers = {
               authorization: `Bearer ${this.$accessToken.accessToken}`
             }
           }
 
-          const response = await axios.request(request);
-          if(response && response.data && response.data.data) blob.dataUrl = response.data.data;
+          const response = await fetch(`${this.$props.downloadBaseUrl}${blob.name}`, request)
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('fileList.downloadBlob:', errorData)
+            throw new AppError('Kunne ikke laste ned fil', 'Kunne ikke laste ned fil');
+          }
+
+          const responseData = await response.json();
+          if (responseData?.data) {
+            blob.dataUrl = responseData.data;
+          }
         }
 
         // If no blob.dataUrl is provided, emit downloadBlob
-        if(!blob.dataUrl) {
+        if (!blob.dataUrl) {
           this.$emit('downloadBlob', blob);
           return;
         }
@@ -99,9 +108,7 @@ export default {
         link.href = blob.dataUrl;
         link.setAttribute('download', blob.name);
         document.body.appendChild(link);
-        link.click()
-
-        return;
+        link.click();
       } catch (err) {
         this.$store.commit('setModalError', err);
       }
