@@ -143,7 +143,7 @@
             v-model="dispatch.archivenumber"
             :disabled="isReadOnly"
             placeholder="Angi et nummer"
-            hint="Angi et saksnummer som allerede eksiterer i P360"
+            hint="Angi et saksnummer som allerede eksisterer i P360"
             label="P360 saksnummer"
             :required="true"
             style="max-width: 750px; width: 100%;"
@@ -155,8 +155,8 @@
           <!-- <VTextField
             :value="templateParagraph"
             label="Paragraf"
-            placeholder="Hvis utsendelsen skal untas offentligheten legg inn paragrafen"
-            hint="Hvis utsendelsen skal untas offentligheten legg inn paragrafen"
+            placeholder="Hvis utsendelsen skal unntas offentligheten legg inn paragrafen"
+            hint="Hvis utsendelsen skal unntas offentligheten legg inn paragrafen"
             :disabled="isReadOnly"
             @input="(e) => updateParagraph(e)"
             style="max-width: 750px; width: 100%;"
@@ -198,7 +198,7 @@
           <div class="centeredColumn" style="margin-top: 1rem">
             <VTFKButton
               class="mt-1"
-              :disabled="!dispatch.template || dispatch.template.template == undefined || !isRequiredTemplateDataFilledIn"
+              :disabled="!dispatch.template || dispatch.template.template === undefined || !isRequiredTemplateDataFilledIn"
               :passedProps="{onClick: () => { previewPDF() }}">Se forhåndsvisning
             </VTFKButton>
           </div>
@@ -212,7 +212,7 @@
               type='secondary' size='small'
               :passedProps="{onClick: () => { saveOrEditDispatch(); }}"
             >
-              <span v-if="mode == 'new'">Send til godkjenning</span>
+              <span v-if="mode === 'new'">Send til godkjenning</span>
               <span v-else>Lagre</span>
             </VTFKButton>
             <VTFKButton v-if="mode === 'new'"
@@ -286,7 +286,7 @@
         /*
           State
         */
-        // Error object - This has draw precidence over everthing else in this component
+        // Error object - This has draw precedence over everything else in this component
         error: undefined,
         // The new or edited dispatch object
         dispatch: {
@@ -361,11 +361,11 @@
         ],
         // MatrikkelUnits where no owners are specified
         matrikkelUnitsWithoutOwners: [],
-        // Ownerships where ownerid is empty
+        // Ownerships where owner id is empty
         ownershipsWithoutOwnerId: [],
         // The initial state of the dispatch (Used for not deactivating the save button when approving)
         initialDispatchStatus: undefined,
-        // The file provided by the fileuploader
+        // The file provided by the file uploader
         uploadedFile: undefined,
         // The templates received from the API
         templates: [],
@@ -387,7 +387,7 @@
         isMatrikkelApproved: false,
         // Has all required template-data been filled in?
         isRequiredTemplateDataFilledIn: false,
-        // Is the matrikkel API currently beeing contacted?
+        // Is the matrikkel API currently being contacted?
         isContactingMatrikkel: false,
         // Is the dispatch approved to be sent inn?
         isDispatchApproved: false,
@@ -398,24 +398,22 @@
     computed: {
       isAllRequiredMatrikkelInfoRetreived() {
         const m = this.dispatch.stats;
-        if(m.affectedCount !== null && m.totalOwners !== null) {
-          return true;
-        }
-        return false;
+        return m.affectedCount !== null && m.totalOwners !== null;
+        
       },
       mode() {
         if(!this.dispatch || this.dispatch._id === undefined) { return 'new'; }
         return 'edit';
       },
       isLocked() {
-        if(this.dispatch && this.dispatch.status === 'inprogress' || this.dispatch.status === 'completed') return true;
-        return false;
+        return this.dispatch && (this.dispatch.status === 'inprogress' || this.dispatch.status === 'completed');
+        
       },
       isReadOnly() {
         if(this.isLocked) return true;
         if(this.initialDispatchStatus === 'notapproved') return false;
-        if(this.dispatch && (this.dispatch.status === 'approved')) { return true; }
-        return false;
+        return this.dispatch && this.dispatch.status === 'approved';
+        
       },
       isReadyToSave() {
         if(this.isReadOnly) return false;
@@ -480,7 +478,7 @@
                   },
                 }
               },
-              // The file provided by the fileuploader
+              // The file provided by the file uploader
               uploadedFile: undefined,
               // The templates received from the API
               // Templates will not reload if you press the "Angre" or "Start på nytt" button, 
@@ -502,7 +500,7 @@
               isMatrikkelApproved: false,
               // Has all required template-data been filled in?
               isRequiredTemplateDataFilledIn: false,
-              // Is the matrikkel API currently beeing contacted?
+              // Is the matrikkel API currently being contacted?
               isContactingMatrikkel: false,
               // Is the dispatch approved to be sent inn?
               isDispatchApproved: false,
@@ -574,8 +572,8 @@
           }, [])
           if(!batches || batches.length === 0) throw new AppError('Problemer med å lage jobber', 'Vi klarte ikke å dele matrikkelIDene inn i mindre jobber');
 
-          let batchIndex = 0;                 // Keeps track of what bach is currently beeing worked on
-          let retreivedOwnerIds = [];         // Array of all the ownerIds that has already been retreived, used for optimizing not retreiving the same owners multiple times
+          let batchIndex = 0;                 // Keeps track of what bach is currently being worked on
+          let retreivedOwnerIds = [];         // Array of all the ownerIds that has already been retreived, used for optimizing not retrieving the same owners multiple times
           let retreivedOwners = [];           // Array that stores all the retreived owners3
           let retreivedMatrikkelUnits = [];   // Matrikkel
           for(const batch of batches) {
@@ -723,12 +721,12 @@
             preExcludedUnits.push(orgObj)
           }
 
-            // Exculde owners
+            // Exclude owners
           for(let owner of ownerCentric) {
             let excludedReason = undefined;
             /*
               AnnenPerson; Andre personer/enheter enn de som kommer fra folkeregisteret/Enhetsregisteret. 
-              Identen består av dato + løpenr, et løpenummer kan også bli tildelt av den kommunen der identen er registrert.
+              Identen består av dato + løpe nr., et løpenummer kan også bli tildelt av den kommunen der identen er registrert.
               En "AnnenPerson" kan være av typen: IkkeOppgitt, Aksjeselskap, BoligbyggelagBorettslag, AnsvarligSelskap, Enkeltperson, Fylkeskommunen, AnnenEiendom, Kommunen, LegatStiftelseOL, Bruksrettshaver, Staten, Utenlandsk, AnnenEiertype
             */
             if(owner._type?.toLowerCase().includes('annenperson')) {
@@ -800,7 +798,7 @@
               owner.isHardExcluded = true;
             }
 
-            // Organisasjonen er slettet fra brønnlysund
+            // Organisasjonen er slettet fra Brønnøysund
             if(owner._type?.toLowerCase().includes('juridisk') && owner.slettetDato) {
               excludedReason = 'Slettet fra Brønnøysund'
               owner.isHardExcluded = true;
@@ -858,7 +856,7 @@
         this.dispatch.excludedOwners.push(owner);
         this.dispatch.excludedOwners = [...this.dispatch.excludedOwners];
         this.$set(this.dispatch, 'excludedOwners', this.dispatch.excludedOwners);
-        // Filter away the exluded owner from the owners array
+        // Filter away the excluded owner from the owners array
         this.dispatch.owners = this.dispatch.owners.filter((o) => o.id !== owner.id);
         this.dispatch.owners = [...this.dispatch.owners]
         this.$set(this.dispatch, 'owners', this.dispatch.owners);
@@ -866,11 +864,11 @@
         this.isDispatchApproved = false;
       },
       includeOwner(owner) {
-        // Add the exlcuded owner
+        // Add the excluded owner
         this.dispatch.owners.push(owner);
         this.dispatch.owners = [...this.dispatch.owners];
         this.$set(this.dispatch, 'owners', this.dispatch.owners);
-        // Remove the owner from the exluded array
+        // Remove the owner from the excluded array
         this.dispatch.excludedOwners = this.dispatch.excludedOwners.filter((o) => o.id !== owner.id);
         this.dispatch.excludedOwners = [...this.dispatch.excludedOwners];
         this.$set(this.dispatch, 'excludedOwners', this.dispatch.excludedOwners);
@@ -933,7 +931,7 @@
         }
 
         // Make a copy of the dispatch object before sending in
-        var postObject = Object.assign(this.dispatch)
+        const postObject = Object.assign(this.dispatch)
 
         // Remove template if not specified
         if(!this.dispatch.template || !this.dispatch.template._id) delete postObject.template;
@@ -968,7 +966,7 @@
         if(this.dispatch.template?.data) {
           // Get all the properties that exists in the schema
           const matchingKeys = pick(this.dispatch.template.data, [...Object.keys(templateData), 'info']);
-          // Overwrite templatedata with the matching information in the matching keys
+          // Overwrite template data with the matching information in the matching keys
           templateData = merge(templateData, matchingKeys);
         }
         
@@ -977,7 +975,7 @@
         this.dispatch.template.data = templateData;
         this.selectedTemplate = e;
 
-        // Signal that templatedata has changed
+        // Signal that template data has changed
         this.onTemplateDataChanged();
         this.updateAttachmentTags();
       },
@@ -1084,7 +1082,7 @@
         // Properties with owners
         owners.forEach(owner => {
           if(owner.ownerships.length === 0) {
-            // Handle the manualy added orgs
+            // Handle the manually added orgs
             let owners = {
               tableType: 'Eier/Mottakere - Etat uten eierforhold',
               navn: '',
@@ -1101,8 +1099,8 @@
               andel: ''
             }
 
-            owners.navn = owner.navn,
-            owners.type = owner._type,
+            owners.navn = owner.navn
+            owners.type = owner._type
             owners.antallEierSkap = owner.ownerships.length
             owners.adresse = this.getPostAddress(owner)
 
@@ -1125,18 +1123,18 @@
                 andel: ''
               }
 
-              owners.navn = owner.navn,
-              owners.type = owner._type,
+              owners.navn = owner.navn
+              owners.type = owner._type
               owners.antallEierSkap = owner.ownerships.length
               owners.adresse = this.getPostAddress(owner)
             
-              owners.bruksnavn = unit.unit.bruksnavn,
-              owners.fraDato = unit.datoFra,
-              owners.kommune = unit.kommuneId,
-              owners.Gnr = unit.unit.matrikkelnummer.gardsnummer,
-              owners.Bnr = unit.unit.matrikkelnummer.bruksnummer,
-              owners.Fnr = unit.unit.matrikkelnummer.festenummer,
-              owners.type_eierforhold = unit._type,
+              owners.bruksnavn = unit.unit.bruksnavn
+              owners.fraDato = unit.datoFra
+              owners.kommune = unit.kommuneId
+              owners.Gnr = unit.unit.matrikkelnummer.gardsnummer
+              owners.Bnr = unit.unit.matrikkelnummer.bruksnummer
+              owners.Fnr = unit.unit.matrikkelnummer.festenummer
+              owners.type_eierforhold = unit._type
               owners.andel = `${unit.andel?.teller}/${unit.andel?.nevner}`
 
               arr.push(owners)
@@ -1147,7 +1145,7 @@
         // Properties with owners, but they are excluded
         excluded.forEach(owner => {
           if(owner.ownerships.length === 0) {
-            // Handle the manualy added orgs
+            // Handle the manually added orgs
             let excluded = {
               tableType: 'Ekskluderte mottakere - Etat uten eierforhold',
               navn: '',
@@ -1164,8 +1162,8 @@
               andel: ''
             }
 
-            excluded.navn = owner.navn,
-            excluded.type = owner._type,
+            excluded.navn = owner.navn
+            excluded.type = owner._type
             excluded.antallEierSkap = owner.ownerships.length
             excluded.adresse = this.getPostAddress(owner)
 
@@ -1188,17 +1186,17 @@
                 andel: ''
               }
             
-              excluded.navn = owner.navn,
-              excluded.type = owner._type,
+              excluded.navn = owner.navn
+              excluded.type = owner._type
               excluded.antallEierSkap = owner.ownerships.length
               excluded.adresse = this.getPostAddress(owner)
             
-              excluded.bruksnavn = unit.unit.bruksnavn,
-              excluded.fraDato = unit.datoFra,
-              excluded.kommune = unit.kommuneId,
-              excluded.Gnr = unit.unit.matrikkelnummer.gardsnummer,
-              excluded.Bnr = unit.unit.matrikkelnummer.bruksnummer,
-              excluded.Fnr = unit.unit.matrikkelnummer.festenummer,
+              excluded.bruksnavn = unit.unit.bruksnavn
+              excluded.fraDato = unit.datoFra
+              excluded.kommune = unit.kommuneId
+              excluded.Gnr = unit.unit.matrikkelnummer.gardsnummer
+              excluded.Bnr = unit.unit.matrikkelnummer.bruksnummer
+              excluded.Fnr = unit.unit.matrikkelnummer.festenummer
               excluded.type_eierforhold = unit._type
               excluded.andel = `${unit.andel?.teller}/${unit.andel?.nevner}`
 
@@ -1209,7 +1207,7 @@
 
         // Properties without owners
         without.forEach(owner => {
-          let without= {
+          let without = {
             tableType: 'Matrikkelenheter uten eierforhold',
             bruksnavn: '',
             type: '',
@@ -1220,8 +1218,8 @@
             etableringsdato: ''
           }
 
-          without.bruksnavn = owner.bruksnavn,
-          without.type = owner._type,
+          without.bruksnavn = owner.bruksnavn
+          without.type = owner._type
           without.kommune = owner.matrikkelnummer.kommuneId
           without.Gnr = owner.matrikkelnummer.gardsnummer
           without.Bnr = owner.matrikkelnummer.bruksnummer

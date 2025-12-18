@@ -7,7 +7,7 @@
         {{error}}
       </div>
       <div style="display: flex; align-items: center; flex-direction: column; margin-top: 1rem; margin-bottom: 0.5rem; gap: 1rem">
-        <img :src="uploadIcon" style="width: 100px;" />
+        <img :src="uploadIcon" style="width: 100px;" alt="upload-icon" />
         Dra og slipp eller trykk i feltet for å laste opp fil
         <VTFKButton v-if="availableFiles.length > 0 && $props.showReset" style="flex: 0 1 auto;" id="resetBtn" :passedProps="{onClick: (e) => {reset(e)}}">Reset</VTFKButton>
       </div>
@@ -116,7 +116,7 @@ export default {
       return this.$props.value || this.$props.files || [];
     },
     dropboxClasses() {
-      var classes = {}
+      const classes = {}
       if(this.isDropAreaDraggedOver) {
         classes['dropbox'] = true;
         classes['dropbox-dragged-over'] = true;
@@ -125,8 +125,7 @@ export default {
         classes['dropbox-dragged-over'] = false;
       }
 
-      if(this.$props.disabled) classes['disabled'] = true;
-      else classes['disabled'] = false;
+      classes['disabled'] = this.$props.disabled;
 
       return classes;
     },
@@ -160,7 +159,7 @@ export default {
           continue;
         }
 
-        // Check if the filetype is an allowed filextension
+        // Check if the filetype is an allowed file extension
         if(this.$props.allowedExtensions && Array.isArray(this.$props.allowedExtensions)) {
           const lowerCaseAllowedExtensions = this.$props.allowedExtensions.map((ext) => ext.toLowerCase())
           if(!file.name.includes('.') || !lowerCaseAllowedExtensions.includes(file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase())) {
@@ -174,7 +173,7 @@ export default {
         if(this.$props.convertDataToDataUrl) data = await readFileAsDataURL(file);
         else data = await readFileAsText(file);
 
-        var fileObject = {
+        const fileObject = {
           name: file.name,
           type: file.type,
           size: file.size,
@@ -190,12 +189,12 @@ export default {
         if(fileObject.size > allowedSize) {
           alert(`Navn: ${fileObject.name}\nStørrelse: ${Math.round(fileObject.size/1000000)}mb\n\nFilen er for stor, filen kan ikke være større enn ${Math.round(allowedSize/1000000)}`)
         } else {
-          //Check if the total filesize of the files added is bigger than the allowed filezie
+          //Check if the total filesize of the files added is bigger than the allowed filesize
           tmpFiles.forEach(file => {
             totalFileSize = file.size + totalFileSize
           })
           if(totalFileSize + fileObject.size > allowedSize) {
-            alert(`Størrelsen på filene du har lastet opp er for stor.\n\nDu har lastet opp: ${Math.round(totalFileSize/1000000)} mb av ${Math.round(allowedSize/1000000)} mb \n\nFilen du prøver å laste opp er ${Math.round(file.size/1000000)} mb \n\nOm du øsnker å laste opp flere filer bør du komprimere filene du alt har lastet opp.`)
+            alert(`Størrelsen på filene du har lastet opp er for stor.\n\nDu har lastet opp: ${Math.round(totalFileSize/1000000)} mb av ${Math.round(allowedSize/1000000)} mb \n\nFilen du prøver å laste opp er ${Math.round(file.size/1000000)} mb \n\nOm du ønsker å laste opp flere filer bør du komprimere filene du alt har lastet opp.`)
           } else {
             if(existingIndex > -1) tmpFiles[existingIndex] = fileObject;
             else tmpFiles.push(fileObject);
@@ -216,7 +215,7 @@ export default {
     onAddFileFromButton(e) {
       if(!e) { return; }
       if(!e.target) { return;}
-      if(e.target.id == 'resetBtn' || e.target.id == 'fileInput') { return; }
+      if(e.target.id === 'resetBtn' || e.target.id === 'fileInput') { return; }
       if(this.$props.disabled) return;
       // Find input and click it to start the file upload
       let input = document.getElementById('fileInput');
@@ -274,7 +273,7 @@ export default {
     border-radius: 20px;
     display: flex;
     justify-content: center;
-    box-shadow: 0px 1px 5px -1px #888888;
+    box-shadow: 0 1px 5px -1px #888888;
   }
 
   .dropbox.disabled {

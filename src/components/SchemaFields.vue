@@ -4,7 +4,7 @@
     <!-- Inputs -->
     <div v-else v-for="(property, i) in schemaProperties" :key="i">
       <VTextField 
-        v-if="property.type === 'string' && property.lines == undefined"
+        v-if="property.type === 'string' && property.lines === undefined"
         :value="getInitialData(property.path)"
         :placeholder="property.description || undefined"
         :hint="property.description || undefined"
@@ -78,7 +78,7 @@ export default {
     setError(err) {
       // Set error
       this.error = err;
-      // Emit that an error has occures
+      // Emit that an error has occured
       this.$emit('error', this.error);
     },
     setSchema() {
@@ -113,7 +113,7 @@ export default {
       // Input validation
       if(!path) return;
       // If the value is empty
-      if(value == '') {
+      if(value === '') {
         unset(this.data, path, value)
       } else {
         // Set the value to the data object

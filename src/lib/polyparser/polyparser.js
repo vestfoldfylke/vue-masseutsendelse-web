@@ -6,7 +6,7 @@ import AppError from '../vtfk-errors/AppError'
 // For transforming coordinates between systems
 import proj4 from 'proj4'
 // For calculating the area of polygons
-import { polygon as turfPolygon } from '@turf/helpers'
+import {polygon as turfPolygon} from '@turf/helpers'
 import turfArea from '@turf/area'
 // Parsers
 const dxf = require('./parsers/dxf')
@@ -43,7 +43,7 @@ function copy (obj) {
 class PolyParser {
   /**
    *
-   * @param {HTMLFile} file A file uploaded to a input-field
+   * @param {HTMLFile} file A file uploaded to an input-field
    * @param {object} options
    * @param {array} EPSG.code Proj4 projection string to transform from
    * @param {string} options.toProj4Projection Proj4 projection string to transform to
@@ -106,7 +106,7 @@ class PolyParser {
     // Make sure that we got valid data back
     if (!parsedData || !Array.isArray(parsedData) || parsedData.length === 0) throw new AppError('Unable to parse file', 'We attempted to parse the file but could not find any data')
 
-    // Make a initial check for the first vertice in the first polygon so it can be used to determine the EPSG code
+    // Make an initial check for the first vertice in the first polygon so it can be used to determine the EPSG code
     if (!parsedData || !Array.isArray(parsedData) || parsedData.length === 0) throw new AppError('Polygon is empty', 'One or more polygons in the file is empty')
     if (!parsedData[0].vertices || !Array.isArray(parsedData[0].vertices) || parsedData[0].vertices.length === 0) throw new AppError('Polygon is empty', 'One or more polygons in the file is empty')
 
@@ -127,21 +127,21 @@ class PolyParser {
         }
       }
 
-      // Make sure that the vertices are selfclosing
+      // Make sure that the vertices are self-closing
       // eslint-disable-next-line
-      if (polygon.vertices[0] != polygon.vertices[polygon.vertices.length]) {
+      if (polygon.vertices[0] !== polygon.vertices[polygon.vertices.length]) {
         polygon.vertices.push(copy(polygon.vertices[0]))
       }
 
       // Validate all vertices in the polygon
       polygon.vertices.forEach((vertice, i) => {
-        // Make sure that all of the vertices in the polygon is in [x, y] format
+        // Make sure that all the vertices in the polygon is in [x, y] format
         if (!vertice || vertice.length < 2) throw new AppError('Vertice is incomplete', `The vertice in position ${i} contains only ${vertice.length} coordinates`, [vertice])
         if (typeof vertice[0] !== 'number' || typeof vertice[1] !== 'number') throw new AppError('Vertice is invalid', `The vertice in position ${i} contains coordinates that are not numbers`, [vertice])
       })
 
-      // Check that the polygon has atleast 4 points
-      if (polygon.vertices.length < 4) throw new AppError('Polygon has to few vertices', `One of the polygons has only ${polygon.vertices.length} it needs atleast 4`)
+      // Check that the polygon has at least 4 points
+      if (polygon.vertices.length < 4) throw new AppError('Polygon has to few vertices', `One of the polygons has only ${polygon.vertices.length} it needs at least 4`)
 
       // Calculate the extremes
       const extremes = this.getExtremes(polygon.vertices)
@@ -252,13 +252,11 @@ class PolyParser {
       if (reverseOrder) coordinates = [coordinates[1], coordinates[0]]
     }
     // Transform the coordinates
-    const result = proj4(EPSGCode, destinationEPSG, coordinates)
-
-    return result
+    return proj4(EPSGCode, destinationEPSG, coordinates)
   }
 
   /**
-   * Retreives the extreme coordinates
+   * Retrieves the extreme coordinates
    * @param {Array[Array[x, y]]} coordinates
    * @returns {object}
    */

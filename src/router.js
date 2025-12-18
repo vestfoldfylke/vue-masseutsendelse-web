@@ -48,7 +48,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 /*
-  Setup the router
+  Set up the router
 */
 const router = new VueRouter({
   mode: 'history',

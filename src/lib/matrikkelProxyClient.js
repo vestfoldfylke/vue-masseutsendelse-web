@@ -27,16 +27,18 @@ export default class MatrikkelProxyClient {
     if (!request.url) { throw new Error('request.url cannot be empty') }
 
     // If MatrikkelProxyClient is specified use that as the base URL instead
-    if (config.MASSEUTSENDELSEAPI_BASEURL) {
-      request.url = config.MASSEUTSENDELSEAPI_BASEURL + 'matrikkel/' + encodeURIComponent(request.url)
-    } else {
-      request.url = this.apiBaseUrl + request.url
-    }
+    request.url = config.MASSEUTSENDELSEAPI_BASEURL
+      ? `${config.MASSEUTSENDELSEAPI_BASEURL}matrikkel/${encodeURIComponent(request.url)}`
+      : `${this.apiBaseUrl}${request.url}`;
 
-    // Make sure that headers are setup on the request
-    if (!request.headers) request.headers = {}
+    // Make sure that headers are set up on the request
+    if (!request.headers) {
+      request.headers = {}
+    }
     request.headers['Content-Type'] = 'application/json'
-    if (this.apiKey) request.headers['X-API-KEY'] = this.apiKey
+    if (this.apiKey) {
+      request.headers['X-API-KEY'] = this.apiKey
+    }
 
     // Apply query options to the request if specified
     if (options && options.query) {
@@ -58,24 +60,19 @@ export default class MatrikkelProxyClient {
     }
 
     // Determine what MatrikkelContext to use
-    if (matrikkelContext) {
-      request.data.matrikkelContext = matrikkelContext
-    } else {
-      request.data.matrikkelContext = this.matrikkelContext
-    }
-
-    // Make the request
-    const response = await store.dispatch('makeMatrikkelRequest', request)
+    request.data.matrikkelContext = matrikkelContext ? matrikkelContext : this.matrikkelContext
 
     // Return the full response
-    return response
+    return await store.dispatch('makeMatrikkelRequest', request)
   }
 
   async getMatrikkelEnheterFromPolygon (polygon, epsg, matrikkelContext) {
-    if (!polygon) { throw new ('Polygon cannot be empty')() }
+    if (!polygon) { throw new AppError('Polygon cannot be empty') }
 
     // Translate from EPST to MatrikkelKoordinatSystemKodeId
-    if (!epsg) throw new AppError('Koordinatsystem mangler', 'Kan ikke kontakte matrikkelen uten å vite epsg-koden til koordinatene')
+    if (!epsg) {
+      throw new AppError('Koordinatsystem mangler', 'Kan ikke kontakte matrikkelen uten å vite epsg-koden til koordinatene')
+    }
 
     let koordinatsystemKodeId
     switch (epsg) {
@@ -87,11 +84,13 @@ export default class MatrikkelProxyClient {
         koordinatsystemKodeId = 10
         break
     }
-    if (!koordinatsystemKodeId) throw new AppError('Feil koordinatsystem', 'Kunne ikke finne passende koordinatsystem for koordinatene')
+    if (!koordinatsystemKodeId) {
+      throw new AppError('Feil koordinatsystem', 'Kunne ikke finne passende koordinatsystem for koordinatene')
+    }
 
     // Construct the request
     const request = {
-      method: 'post',
+      method: 'POST',
       url: 'matrikkelenheter',
       data: {
         koordinatsystemKodeId,
@@ -100,10 +99,7 @@ export default class MatrikkelProxyClient {
     }
 
     // Make the request
-    const response = await this.makeRequest(request, matrikkelContext)
-
-    // Return the respose
-    return response.data
+    return await this.makeRequest(request, matrikkelContext)
   }
 
   async getStoreItems (items, koordinatsystemKodeId, options, matrikkelContext) {
@@ -113,7 +109,7 @@ export default class MatrikkelProxyClient {
 
     // Construct the request
     const request = {
-      method: 'post',
+      method: 'POST',
       url: 'store',
       headers: {
         'X-API-KEY': this.apiKey,
@@ -126,14 +122,11 @@ export default class MatrikkelProxyClient {
     }
 
     // Make the request
-    const response = await this.makeRequest(request, options, matrikkelContext)
-
-    // Return the respose
-    return response.data
+    return await this.makeRequest(request, options, matrikkelContext)
   }
 
   /**
-    * Will attempt to get the type of a provided object if it is not flattened
+    * Will attempt to get the type of provided object if it is not flattened
     * @param {Item} Item - An object returned from the MatrikkelAPI
   */
   static getItemType (Item) {
@@ -168,7 +161,8 @@ export default class MatrikkelProxyClient {
 
   /**
    *
-   * @param {Object} data Data object containing MatrikkelEnheter
+   * @param {Object} matrikkelUnits Data object containing MatrikkelEnheter
+   * @param {Object} matrikkelOwners Data object containing MatrikkelEiere
    */
   static getMatrikkelEnheterOwnerCentric (matrikkelUnits, matrikkelOwners) {
     if (!matrikkelUnits) throw new AppError('MatrikkelEnheter missing', 'No MatrikkelEnheter is provided')
@@ -177,11 +171,11 @@ export default class MatrikkelProxyClient {
     // Object to store
     const returnedOwners = {}
 
-    // Loop through units as they contains the owner information
+    // Loop through units as they contain the owner information
     for (const unit of matrikkelUnits) {
       if (unit.eierforhold) {
         unit.eierforhold.forEach((ownership) => {
-          // Retreive the owner for the ownership
+          // Retrieve the owner for the ownership
           const owner = matrikkelOwners.find((o) => o.id.value === ownership.eierId)
           if (!owner) throw new AppError('Kunne ikke finne eier til eierskap', `Eier med id ${ownership.eierforhold} kunne ikke finnes for ${unit.bruksnavn}`)
 

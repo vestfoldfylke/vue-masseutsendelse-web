@@ -49,7 +49,7 @@ export default {
     return {
       items: [
         { text: 'Under Behandling', value: 'notapproved', color: '#E7827E', hint: 'Utsendelsen vil ikke gjennomføres før den er godkjent' },
-        { text: 'Godkjent', value: 'approved', color: '#D0C788', hint: 'Utsendelsen låses 00:00 og sendes i morgen 12:00' }
+        { text: 'Godkjent', value: 'approved', color: '#D0C788', hint: 'Utsendelsen låses 00:00 og sendes i morgen mellom 12:00 og 13:00' }
       ]
     }
   },
