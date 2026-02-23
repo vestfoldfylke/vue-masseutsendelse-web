@@ -263,6 +263,9 @@
 
   // Custom error class
   import AppError from '../lib/vtfk-errors/AppError';
+  
+  // Helpers
+  import { getFilenameDateTime } from '../lib/helpers';
 
   export default {
     name: 'dispatchEditor',
@@ -602,7 +605,7 @@
             }
             // Håndter feil
             if(!matrikkelEnheter || batch.length === 0) {
-              throw new AppError('Ingen MatrikkelEnheter funnet', 'Vi klarte ikke å finne noen matrikkelinformasjon for de ' + matrikkelEnhetIds.length + ' idene');
+              throw new AppError('Ingen MatrikkelEnheter funnet', 'Vi klarte ikke å finne matrikkelinformasjon for de ' + matrikkelEnhetIds.length + ' idene');
             } else if (batch.length > matrikkelEnheter.length) {
               let deviation = batch.length - matrikkelEnheter.length;
               let notFoundIDs = [];
@@ -1081,7 +1084,7 @@
         let arr = []
         // Properties with owners
         owners.forEach(owner => {
-          if(owner.ownerships.length === 0) {
+          if (owner.ownerships.length === 0) {
             // Handle the manually added orgs
             let owners = {
               tableType: 'Eier/Mottakere - Etat uten eierforhold',
@@ -1105,46 +1108,47 @@
             owners.adresse = this.getPostAddress(owner)
 
             arr.push(owners)
-          } else {
-            owner.ownerships.forEach(unit => {
-              let owners = {
-                tableType: 'Eier/Mottakere',
-                navn: '',
-                type: '',
-                antallEierSkap: '', 
-                adresse: '',
-                bruksnavn: '',
-                fraDato: '', 
-                kommune: '',
-                Gnr: '',
-                Bnr: '',
-                Fnr: '',
-                type_eierforhold: '',
-                andel: ''
-              }
-
-              owners.navn = owner.navn
-              owners.type = owner._type
-              owners.antallEierSkap = owner.ownerships.length
-              owners.adresse = this.getPostAddress(owner)
-            
-              owners.bruksnavn = unit.unit.bruksnavn
-              owners.fraDato = unit.datoFra
-              owners.kommune = unit.kommuneId
-              owners.Gnr = unit.unit.matrikkelnummer.gardsnummer
-              owners.Bnr = unit.unit.matrikkelnummer.bruksnummer
-              owners.Fnr = unit.unit.matrikkelnummer.festenummer
-              owners.type_eierforhold = unit._type
-              owners.andel = `${unit.andel?.teller}/${unit.andel?.nevner}`
-
-              arr.push(owners)
-            })
+            return;
           }
+
+          owner.ownerships.forEach(unit => {
+            let owners = {
+              tableType: 'Eier/Mottakere',
+              navn: '',
+              type: '',
+              antallEierSkap: '', 
+              adresse: '',
+              bruksnavn: '',
+              fraDato: '', 
+              kommune: '',
+              Gnr: '',
+              Bnr: '',
+              Fnr: '',
+              type_eierforhold: '',
+              andel: ''
+            }
+
+            owners.navn = owner.navn
+            owners.type = owner._type
+            owners.antallEierSkap = owner.ownerships.length
+            owners.adresse = this.getPostAddress(owner)
+
+            owners.bruksnavn = unit.unit.bruksnavn
+            owners.fraDato = unit.datoFra
+            owners.kommune = unit.kommuneId
+            owners.Gnr = unit.unit.matrikkelnummer.gardsnummer
+            owners.Bnr = unit.unit.matrikkelnummer.bruksnummer
+            owners.Fnr = unit.unit.matrikkelnummer.festenummer
+            owners.type_eierforhold = unit._type
+            owners.andel = `${unit.andel?.teller}/${unit.andel?.nevner}`
+
+            arr.push(owners)
+          })
         })
 
         // Properties with owners, but they are excluded
         excluded.forEach(owner => {
-          if(owner.ownerships.length === 0) {
+          if (owner.ownerships.length === 0) {
             // Handle the manually added orgs
             let excluded = {
               tableType: 'Ekskluderte mottakere - Etat uten eierforhold',
@@ -1168,41 +1172,42 @@
             excluded.adresse = this.getPostAddress(owner)
 
             arr.push(excluded)
-          } else {
-            owner.ownerships.forEach(unit => {
-              let excluded = {
-                tableType: 'Ekskluderte mottakere',
-                navn: '',
-                type: '',
-                antallEierSkap: '', 
-                adresse: '',
-                bruksnavn: '',
-                fraDato: '',
-                kommune: '', 
-                Gnr: '',
-                Bnr: '',
-                Fnr: '',
-                type_eierforhold: '',
-                andel: ''
-              }
-            
-              excluded.navn = owner.navn
-              excluded.type = owner._type
-              excluded.antallEierSkap = owner.ownerships.length
-              excluded.adresse = this.getPostAddress(owner)
-            
-              excluded.bruksnavn = unit.unit.bruksnavn
-              excluded.fraDato = unit.datoFra
-              excluded.kommune = unit.kommuneId
-              excluded.Gnr = unit.unit.matrikkelnummer.gardsnummer
-              excluded.Bnr = unit.unit.matrikkelnummer.bruksnummer
-              excluded.Fnr = unit.unit.matrikkelnummer.festenummer
-              excluded.type_eierforhold = unit._type
-              excluded.andel = `${unit.andel?.teller}/${unit.andel?.nevner}`
-
-              arr.push(excluded)
-            })
+            return;
           }
+
+          owner.ownerships.forEach(unit => {
+            let excluded = {
+              tableType: 'Ekskluderte mottakere',
+              navn: '',
+              type: '',
+              antallEierSkap: '', 
+              adresse: '',
+              bruksnavn: '',
+              fraDato: '',
+              kommune: '', 
+              Gnr: '',
+              Bnr: '',
+              Fnr: '',
+              type_eierforhold: '',
+              andel: ''
+            }
+
+            excluded.navn = owner.navn
+            excluded.type = owner._type
+            excluded.antallEierSkap = owner.ownerships.length
+            excluded.adresse = this.getPostAddress(owner)
+
+            excluded.bruksnavn = unit.unit.bruksnavn
+            excluded.fraDato = unit.datoFra
+            excluded.kommune = unit.kommuneId
+            excluded.Gnr = unit.unit.matrikkelnummer.gardsnummer
+            excluded.Bnr = unit.unit.matrikkelnummer.bruksnummer
+            excluded.Fnr = unit.unit.matrikkelnummer.festenummer
+            excluded.type_eierforhold = unit._type
+            excluded.andel = `${unit.andel?.teller}/${unit.andel?.nevner}`
+
+            arr.push(excluded)
+          })
         })
 
         // Properties without owners
@@ -1230,9 +1235,10 @@
         })
 
         const data = arr
-        const fileName= `${this.dispatch.title}_Eiere`
+        const fileName = `${this.dispatch.title ? `${this.dispatch.title}_` : ""}Eiere_${getFilenameDateTime()}`
         const exportType = exportFromJSON.types.csv
-        exportFromJSON({ data, fileName:fileName, exportType: exportType })
+        const withBOM = true
+        exportFromJSON({ data, fileName, exportType, withBOM })
       },
     },
     created() {
